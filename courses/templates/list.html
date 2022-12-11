@@ -1,0 +1,19 @@
+{% extends "main.html" %}
+{% block content %}
+<div class="container row">
+    <h3>{{ list.title }}</h3>
+    <p class="mx-2">{{ list.description }}</p>
+{% for course in courses %}
+<div class="card col-2 me-3 style="width: 14rem;">
+    <img src="/media/{{course.course_pic}}" class="card-img-top">
+    <div class="card-body">
+      <h5 class="card-title">{{course.title}}</h5>
+      <a class="card-subtitle mb-2 text-muted" href="user/{{course.author.id}}">{{course.author.username}}</a>
+      <p class="card-text">{{course.subject}}</p>
+      <a href="/course/{{course.id}}" class="btn btn-primary">Перейти</a>
+    </div>
+  </div>
+{% endfor %}
+</div>
+
+{% endblock %}

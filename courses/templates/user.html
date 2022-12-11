@@ -1,0 +1,47 @@
+{% extends "main.html" %}
+{% block content %}
+<div class="container mt-5">
+    <div class="row">
+        <div class="col-8">
+            <img src="/media/{{ user.picture }}" class="rounded-circle" width="100px" height="100px">
+            <h3 class="ms-6">{{ user.username }}</h3>
+            <h5 class="ms-6 text-muted">{{ user.email }}</h5>
+            <h3 class="ms-6">{{ user.surname }} {{ user.name }} {{ user.middle_name }}</h3>
+            <h6 class="ms-6 text-muted">На сайте с {{ user.date_created|date:"d.m.Y"  }}</h6>
+        </div>
+        <div class="col-4">
+            {% if logged_user %}
+            <ul class="list-group">
+                <li class="list-group-item list-group-item-action">
+                    <div class="dropdown">
+                        <a class="nav-link" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                          Мои списки
+                        </a>
+                        <ul class="dropdown-menu">
+                          {% for list in lists %}
+                          <li><a class="dropdown-item" href="/lists/{{list.id}}">{{list.title}}</a></li>
+                          {% endfor %}
+                          <li><a class="dropdown-item" href="/list/create">Добавить список</a></li>
+                        </ul>
+                    </div>
+                </li>
+                <li class="list-group-item"><a class="nav-link" href="{{ user.id }}/courses">Мои курсы</a></li>
+                <li class="list-group-item list-group-item-action">
+                    <div class="dropdown">
+                        <a class="nav-link" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                          Действие...
+                        </a>
+                        <ul class="dropdown-menu">
+                          <li><a class="dropdown-item" href="{{user.id}}/change">Изменить данные</a></li>
+                          <li><a class="dropdown-item" href="{{user.id}}/delete">Удалить пользователя</a></li>
+                        </ul>
+                    </div>
+                </li>
+            {% endif %}
+            </ul>
+        </div>
+    </div>
+</div>
+
+
+{% endblock %}

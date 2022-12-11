@@ -1,0 +1,30 @@
+{% extends "main.html" %}
+{% load crispy_forms_tags %}
+{% block content %}
+
+<div class="d-flex align-items-center justify-content-center flex-column">
+    {% for page in pages %}
+    
+    <div class="" style="display: none;" name="page" id="{{ page.id }}">
+        {% if logged_user %}
+        <a href="{{ page.id }}/delete_page" class="mb-2 btn btn-danger">Удалить страницу</a>
+        {% endif %}
+        <div class="col-11">
+            {% autoescape off %}
+                {{ page.html_content }}
+            {% endautoescape %}
+        </div>
+    </div>
+    {% endfor %}
+    <nav>
+        <ul class="pagination mt-5">
+          <li class="page-item"><button class="page-link" onclick="prevPage()">Предыдущая страница</button></li>
+          <li class="page-item"><button class="page-link" onclick="nextPage()">Следующая страница</button></li>
+        </ul>
+    </nav>
+</div>
+
+<script src="/static/scripts/pages.js"></script>
+
+
+{% endblock %}

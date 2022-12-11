@@ -1,0 +1,31 @@
+{% extends "main.html" %}
+{% load crispy_forms_tags %}
+{% block content %}
+
+<div class="container col-4 ms-4">
+    <form method="POST" enctype="multipart/form-data">
+        {% csrf_token %}
+        <input type="hidden" id="course_list" name="course_list">
+        <fieldset class="form-group">
+            {{ form|crispy }}
+        </fieldset>
+        <div class="form-group">
+            <button class="btn btn-outline-info" type="submit">Создать</button>
+        </div>
+    </form>
+</div>
+<div class="container row mt-4 ms-4">
+    {% for course in courses %}
+        <div class="card col-2 me-3 style="width: 14rem;" id="{{course.id}}">
+            <img src="/media/{{course.course_pic}}" class="card-img-top">
+            <div class="card-body">
+            <h5 class="card-title">{{course.title}}</h5>
+            <a class="card-subtitle mb-2 text-muted" href="user/{{course.author.id}}">{{course.author.username}}</a>
+            <p class="card-text">{{course.subject}}</p>
+            <button class="btn btn-primary" onclick="document.getElementById('course_list').value += ' ' + '{{course.id}}'; document.getElementById('{{course.id}}').style.display = 'none';">Добавить</button>
+            </div>
+        </div>
+        {% endfor %}
+</div>
+
+{% endblock %}

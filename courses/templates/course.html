@@ -1,0 +1,59 @@
+{% extends "main.html" %}
+{% block content %}
+<div class="container-fluid">
+    <div class="row" style="background-image:url('/media/{{course.course_pic}}');height:300px;" ></div>
+    <div class="row mt-2">
+        <h3 class="col-10">{{ course.title }}</h3>
+        <div class="col-2 justify-content-center">
+            {% if grade_average is not None %}
+            <h2 class="text-primary col-3" style="margin-left:auto ;">{{ grade_average }}</h2>
+            {% else %}
+            <h2 class="text-primary col-3" style="margin-left:auto ;">0</h2>
+            {% endif %}
+            <a href="{{ course.id }}/pages" class="col-12 btn btn-primary">Начать курс</a>
+
+            <li class="list-group-item">
+                <div class="dropdown">
+                    <a class="mt-2 btn btn-outline-secondary" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        Действие...
+                    </a>
+                    <ul class="dropdown-menu">
+                      <li><a class="dropdown-item" href="{{ course.id }}/new_page">Добавить страницу</a></li>
+                      <li><a class="dropdown-item" href="{{ course.id }}/change">Изменить данные курса</a></li>
+                      <li><a class="dropdown-item" href="{{ course.id }}/pages">Удалить страницы</a></li>
+                      <li><a class="dropdown-item" href="{{ course.id }}/delete">Удалить курс</a></li>
+                    </ul>
+                </div>
+            </li>
+
+        </div>
+    </div>
+    <h4>{{ course.subject }}</h4>
+    <p>{{ course.description }}</p>
+    <h3 class="mt-5">Отзывы</h3>
+    {% if logged_user %}
+    <div class="row mt-2 justify-content-center">
+        <a href="{{ course.id }}/new_review" class="col-3 btn btn-outline-secondary">Оставить отзыв</a>
+    </div>
+    {% endif %}
+    {% for review in reviews %}
+    <div class="row border rounded mt-3 ps-2 pt-2">
+        <div class="col-1 pe-0 ps-4">
+            <img src="/media/{{ review.author.picture }}" class="rounded-circle" width="60px" height="60px">
+        </div>
+        <div class="col-11">
+            <div class="row">
+                    <div class="col-11"><a href="/user/{{ review.author.id }}" class="nav-link">{{review.author.username}}</a></div>
+                    <h2 class="text-primary col-1 ps-5">{{review.grade}}</h2>
+            </div>
+            <div class="row ps-0">
+                <small class="text-muted ps-0">{{review.date|date:"d.m.Y"}}</small>
+                <p class="border-top ps-0">{{review.text}}</p>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+
+{% endblock %}
