@@ -63,6 +63,8 @@ class CourseCreationForm(forms.Form):
     title = forms.CharField(label='Название', min_length=5, max_length=255)
     subject = forms.CharField(label='Предмет', widget=forms.Select(choices=subjects))
     description = forms.CharField(label='Описание', required=False, widget=forms.Textarea())
+    difficulty = forms.CharField(label='Сложность курса', widget=forms.Select(choices=[("Легкий","Легкий"), ("Средний","Средний"), ("Сложный","Сложный")]))
+    duration = forms.CharField(label='Длительность курса')
     course_pic = forms.ImageField(label='Изображение', required=False)
 
 class ListCreationForm(forms.Form):
@@ -72,3 +74,6 @@ class ListCreationForm(forms.Form):
 class NewReviewForm(forms.Form):
     grade = forms.IntegerField(label='Оценка', widget=forms.Select(choices=[(1,1), (2,2), (3,3), (4,4), (5,5)]))
     text = forms.CharField(label='Текст', required=False, widget=forms.Textarea())
+
+class TicketCreationForm(forms.Form):
+    text = forms.CharField(label='Текст жалобы',widget=forms.Textarea)

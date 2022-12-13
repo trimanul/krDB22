@@ -32,6 +32,9 @@ class Courses(models.Model):
     title = models.CharField(max_length=255)
     subject = models.TextField()
     description = models.TextField(blank=True, null=True)
+    difficulty = models.TextField()
+    duration = models.TextField()
+    date_created = models.DateTimeField(auto_now_add=timezone.now)
     course_pic = models.ImageField(upload_to="course_imgs/", default="course_imgs/default_course_img.png")
 
     class Meta:
@@ -72,7 +75,23 @@ class Pages(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4)
     course = models.ForeignKey(Courses, on_delete=models.CASCADE)
     html_content = models.TextField()
+    page_num = models.IntegerField()
 
     class Meta:
         db_table = 'pages'
 
+class Tickets(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4)
+    author = models.ForeignKey(Users, on_delete=models.CASCADE)
+    course = models.ForeignKey(Courses, on_delete=models.CASCADE)
+    text = models.TextField()
+    class Meta:
+        db_table = 'tickets'
+
+class Trackers(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4)
+    user = models.ForeignKey(Users, on_delete=models.CASCADE)
+    course = models.ForeignKey(Courses, on_delete=models.CASCADE)
+    cur_page = models.ForeignKey(Pages, on_delete=models.CASCADE)
+    class Meta:
+        db_table = 'trackers'

@@ -1,7 +1,8 @@
 {% extends "main.html" %}
 {% load crispy_forms_tags %}
 {% block content %}
-
+{% csrf_token %}
+<input type="hidden" id="cur_page" value="{{cur_page}} {{course_id}} {{cur_page_id}}">
 <div class="d-flex align-items-center justify-content-center flex-column">
     {% for page in pages %}
     
@@ -9,10 +10,14 @@
         {% if logged_user %}
         <a href="{{ page.id }}/delete_page" class="mb-2 btn btn-danger">Удалить страницу</a>
         {% endif %}
+        <ul class="pagination mt-5">
+            <li class="page-item"><button class="page-link">Страница {{page.page_num}}</button></li>
+        </ul>
         <div class="col-11">
             {% autoescape off %}
                 {{ page.html_content }}
             {% endautoescape %}
+
         </div>
     </div>
     {% endfor %}

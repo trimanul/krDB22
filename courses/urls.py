@@ -16,13 +16,20 @@ urlpatterns = [
     path('course/<str:course_id>', views.course, name='courses-course'),
     path('course/<str:course_id>/new_review', views.new_review, name='courses-new_review'),
     path('course/<str:course_id>/pages', views.pages, name='courses-pages'),
+    path('api/change_cur', views.pages_change_cur, name='courses-pages-change_cur'),
     path('course/<str:course_id>/new_page', views.new_page, name='courses-new_page'),
     path('course/<str:course_id>/delete', views.delete_course, name='courses-delete_course'),
     path('course/<str:course_id>/change', views.course_change, name='courses-course_change'),
+    path('course/<str:course_id>/new_ticket', views.new_ticket, name='courses-new_ticket'),
     path('course/<str:course_id>/<str:page_id>/delete_page', views.delete_page, name='courses-delete_page'),
 
     path('lists/<str:list_id>', views.list, name='courses-list'),
     path('list/create', views.list_create, name='courses-list_create'),
+
+    path('admin', views.admin, name="courses-admin"),
+    path('admin/tickets', views.admin_tickets, name="courses-admin_tickets"),
+    path('admin/tickets/<str:ticket_id>/delete', views.admin_ticket_delete, name="courses-admin_ticket_delete"),
+
 
 
 

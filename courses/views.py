@@ -1,15 +1,17 @@
 from django.shortcuts import render, redirect
+from django.http import HttpResponse
 from courses.models import Courses
 from django.forms.models import model_to_dict
-from .forms import RegistrationForm, LoginForm, CourseCreationForm, NewReviewForm, ChangeForm, ListCreationForm
+from .forms import RegistrationForm, LoginForm, CourseCreationForm, NewReviewForm, ChangeForm, ListCreationForm, TicketCreationForm
 from django.contrib import messages
-from .models import Users, Reviews, Pages, Lists, ListsCourses
+from .models import Users, Reviews, Pages, Lists, ListsCourses, Tickets, Trackers
 import bcrypt
 from django.core.exceptions import ValidationError
 from django.db.models import Avg
 
 from django.conf import settings
 import os
+import json
 
 def home(request):
     courses = Courses.objects.all()
@@ -24,9 +26,9 @@ def course(request, course_id):
     reviews = Reviews.objects.filter(course=course).order_by('-date')
     grade_average = reviews.aggregate(Avg('grade'))
     if "logged_user" in request.session:
-        return render(request, "course.html", {'course': course, 'reviews':reviews, 'grade_average':grade_average['grade__avg'], 'logged_user':request.session["logged_user"]})
+        return render(request, "course.html", {'course': course, 'reviews':reviews, 'grade_average':grade_average['grade__avg'], 'logged_user':request.session["logged_user"], "course_author":str(course.author.id)})
     else:
-        return render(request, "course.html", {'course': course, 'reviews':reviews, 'grade_average':grade_average['grade__avg'], 'logged_user':0})
+        return render(request, "course.html", {'course': course, 'reviews':reviews, 'grade_average':grade_average['grade__avg'], 'logged_user':0, "course_author":str(course.author.id)})
 
 def delete_course(request, course_id):
     course = Courses.objects.filter(id=course_id).first()
@@ -41,7 +43,7 @@ def user(request, user_id):
     user = Users.objects.filter(id=user_id).first()
     lists = Lists.objects.filter(user=user)
     if "logged_user" in request.session:
-        return render(request, "user.html", {'user': user, 'logged_user':request.session["logged_user"], "lists":lists})
+        return render(request, "user.html", {'user': user, 'logged_user':request.session["logged_user"], "lists":lists, "is_admin":user.is_admin})
     else:
         return render(request, "user.html", {'user': user, 'logged_user':0})
 
@@ -69,7 +71,7 @@ def user_change(request, user_id):
                     user.picture = request.FILES["picture"]
                 user.save()
                 messages.success(request, 'Аккаунт успешно изменен.')
-                return redirect('courses-home')
+                return redirect('courses-user', user_id)
         else:
             db_data = {
                 "username":user.username,
@@ -95,9 +97,9 @@ def create_course(request, user_id):
         if form.is_valid():
             course = None
             if (form.cleaned_data["course_pic"] is not None):
-                course = Courses.objects.create(author=course_author, title=form.cleaned_data["title"], subject=form.cleaned_data["subject"], description=form.cleaned_data["description"], course_pic=form.cleaned_data["course_pic"])
+                course = Courses.objects.create(author=course_author, title=form.cleaned_data["title"], subject=form.cleaned_data["subject"], description=form.cleaned_data["description"], difficulty=form.cleaned_data["difficulty"], duration=form.cleaned_data["duration"], course_pic=form.cleaned_data["course_pic"])
             else:
-                course = Courses.objects.create(author=course_author, title=form.cleaned_data["title"], subject=form.cleaned_data["subject"], description=form.cleaned_data["description"])
+                course = Courses.objects.create(author=course_author, title=form.cleaned_data["title"], subject=form.cleaned_data["subject"], description=form.cleaned_data["description"], difficulty=form.cleaned_data["difficulty"], duration=form.cleaned_data["duration"])
             messages.success(request, 'Курс успешно создан.')
             return redirect('courses-new_page', course.id)
     else:
@@ -146,13 +148,48 @@ def new_review(request, course_id):
         else:
             return render(request, "new_review.html", {'form': form, 'logged_user':0})
 
+def new_ticket(request, course_id):
+    if request.method == 'POST':
+        form = TicketCreationForm(request.POST)
+        ticket_author = Users.objects.filter(id=request.session["logged_user"]).first()
+        course = Courses.objects.filter(id=course_id).first()
+        if form.is_valid():
+            Tickets.objects.create(author=ticket_author, course=course, text=form.cleaned_data["text"])
+            messages.success(request, 'Спасибо за жалобу.')
+            return redirect('courses-course', course_id)
+    else:
+        form = TicketCreationForm()
+        if "logged_user" in request.session:
+            return render(request, "new_ticket.html", {'form': form, 'logged_user':request.session["logged_user"]})
+        else:
+            return render(request, "new_ticket.html", {'form': form, 'logged_user':0, "course":course})
+
 def pages(request, course_id):
     course = Courses.objects.filter(id=course_id).first()
-    pages = Pages.objects.filter(course=course)
+    pages = Pages.objects.filter(course=course).order_by("page_num")
     if "logged_user" in request.session:
-                return render(request, "pages.html", {'logged_user':request.session["logged_user"], "pages":pages})
+        logged_user = Users.objects.filter(id=request.session["logged_user"]).first()
+        tracker = Trackers.objects.filter(user=logged_user, course=course).first()
+        cur_page = 1
+        if (not tracker):
+            tracker = Trackers.objects.create(user=logged_user, cur_page=pages.first(), course=course)
+            cur_page = tracker.cur_page
+        else:
+            cur_page = tracker.cur_page
+        
+        return render(request, "pages.html", {'logged_user':request.session["logged_user"], "pages":pages, "cur_page":cur_page.page_num, "course_id":course_id, "cur_page_id":cur_page.id})
     else:
         return render(request, "pages.html", {'logged_user':0, "pages":pages})
+def pages_change_cur(request):
+    post = json.loads(request.body)
+    user = Users.objects.filter(id=request.session["logged_user"]).first()
+    course = Courses.objects.filter(id=post["course_id"]).first()
+    cur_page = Pages.objects.filter(course=course, page_num=post["cur_page"]).first()
+    tracker = Trackers.objects.filter(user=user, course=course).first()
+    tracker.cur_page = cur_page
+    tracker.save()
+    response_data = {'success':1}
+    return HttpResponse(json.dumps(response_data), content_type="application/json")
 
 def new_page(request, course_id):
     if request.method == 'POST':
@@ -180,8 +217,8 @@ def new_page(request, course_id):
                     html = html + f'<img src="/media/page_imgs/{val}">\n'
                 else:
                     html = html + f'<p>{val}</p>\n'
-            
-            Pages.objects.create(course=course, html_content = html)
+            prev_pages = Pages.objects.filter(course=course).count()
+            Pages.objects.create(course=course, html_content = html, page_num=(prev_pages + 1))
             messages.success(request, 'Страница добавлена.')
             if bool(request.POST["is_fin"]):
                 return redirect(f"/course/{course_id}")
@@ -236,6 +273,39 @@ def list_create(request):
         return render(request, "list_create.html", {'logged_user':request.session["logged_user"], "form":form, "courses":courses})
     else:
         return redirect('courses-home')
+
+def admin(request):
+    if ("logged_user" in request.session):
+        user = Users.objects.filter(id= request.session["logged_user"]).first()
+        if user.is_admin:
+            users = Users.objects.all()
+            courses = Courses.objects.all()
+            lists = Lists.objects.all()
+            reviews = Reviews.objects.all()
+
+            data = {"logged_user":request.session["logged_user"], 
+            "users":users, 
+            "courses":courses, 
+            "lists":lists, 
+            "reviews":reviews,
+            }
+
+            return render(request, "admin.html", data)
+        else:
+            return redirect('courses-home')
+
+def admin_tickets(request):
+    tickets = Tickets.objects.all()
+    if ("logged_user" in request.session):
+        return render(request, "admin_tickets.html", {'logged_user':request.session["logged_user"],"tickets":tickets})
+    else:
+        return redirect('admin')
+
+def admin_ticket_delete(request, ticket_id):
+    ticket = Tickets.objects.filter(id=ticket_id).first()
+    ticket.delete()
+    messages.success(request, "Жалоба удалена")
+    return redirect("courses-admin_tickets")
 
 def signin(request):
     if request.method == 'POST':

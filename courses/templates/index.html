@@ -8,10 +8,14 @@
       <h5 class="card-title">{{course.title}}</h5>
       <a class="card-subtitle mb-2 text-muted" href="user/{{course.author.id}}">{{course.author.username}}</a>
       <p class="card-text">{{course.subject}}</p>
+      <p class="card-text"><img src="/media/misc/clock.png" width="12" height="12">  {{course.duration}}ч</p>
+      <h6 class="card-text" id="{{ course.id }}_diff" onload="changeDiff()">{{ course.difficulty }}</h6>
       <a href="/course/{{course.id}}" class="btn btn-primary">Перейти</a>
     </div>
   </div>
 {% endfor %}
 </div>
+
+<script src="/static/scripts/index.js"></script>
 
 {% endblock %}

@@ -11,7 +11,8 @@
             <h2 class="text-primary col-3" style="margin-left:auto ;">0</h2>
             {% endif %}
             <a href="{{ course.id }}/pages" class="col-12 btn btn-primary">Начать курс</a>
-
+            <a href="{{ course.id }}/new_ticket" class="mt-2 btn btn-outline-danger">Пожаловаться</a>
+            {% if logged_user == course_author %}
             <li class="list-group-item">
                 <div class="dropdown">
                     <a class="mt-2 btn btn-outline-secondary" type="button" data-bs-toggle="dropdown" aria-expanded="false">
@@ -23,8 +24,10 @@
                       <li><a class="dropdown-item" href="{{ course.id }}/pages">Удалить страницы</a></li>
                       <li><a class="dropdown-item" href="{{ course.id }}/delete">Удалить курс</a></li>
                     </ul>
+
                 </div>
             </li>
+            {% endif %}
 
         </div>
     </div>

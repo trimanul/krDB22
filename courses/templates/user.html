@@ -34,6 +34,9 @@
                         <ul class="dropdown-menu">
                           <li><a class="dropdown-item" href="{{user.id}}/change">Изменить данные</a></li>
                           <li><a class="dropdown-item" href="{{user.id}}/delete">Удалить пользователя</a></li>
+                          {% if is_admin %}
+                          <li><a class="dropdown-item" href="/admin">Панель администратора</a></li>
+                          {% endif %}
                         </ul>
                     </div>
                 </li>
